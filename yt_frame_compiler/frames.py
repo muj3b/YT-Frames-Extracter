@@ -52,7 +52,7 @@ def _determine_window(target: float, duration: int | float | None) -> tuple[floa
 
 
 def _build_download_ranges(percent: float, fallback_timestamp: float) -> callable:
-    def selector(info_dict: dict) -> Sequence[dict]:
+    def selector(info_dict: dict, *_args, **_kwargs) -> Sequence[dict]:
         duration = info_dict.get("duration")
         timestamp = _calculate_timestamp(duration, percent) if duration else fallback_timestamp
         start, end = _determine_window(timestamp, duration)
