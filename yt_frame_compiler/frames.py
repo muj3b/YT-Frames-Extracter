@@ -4,7 +4,7 @@ import math
 import subprocess
 from datetime import datetime
 from pathlib import Path
-from typing import Iterable, List
+from typing import Iterable, List, Sequence
 
 from yt_dlp import YoutubeDL
 from yt_dlp.utils import DownloadError
@@ -38,6 +38,27 @@ def _calculate_timestamp(duration_seconds: int | None, percent: float) -> float:
     if math.isclose(bounded, 100.0):
         return max(duration_seconds - 0.1, 0.0)
     return duration_seconds * (bounded / 100.0)
+
+
+def _determine_window(target: float, duration: int | float | None) -> tuple[float, float]:
+    window = 1.5  # seconds on either side of the target frame
+    start = max(0.0, target - window)
+    end = target + window
+    if duration:
+        end = min(end, float(duration))
+    if end - start < 0.75:
+        end = start + 0.75
+    return start, end
+
+
+def _build_download_ranges(percent: float, fallback_timestamp: float) -> callable:
+    def selector(info_dict: dict) -> Sequence[dict]:
+        duration = info_dict.get("duration")
+        timestamp = _calculate_timestamp(duration, percent) if duration else fallback_timestamp
+        start, end = _determine_window(timestamp, duration)
+        return [{"start_time": start, "end_time": end}]
+
+    return selector
 
 
 def _parse_upload_date(value: str | int | float | None) -> datetime | None:
@@ -108,6 +129,8 @@ def extract_first_frame(
         "max_sleep_interval": int(max_sleep_interval),
         "ratelimit": int(ratelimit),
         "logger": QuietLogger(),
+        "download_ranges": _build_download_ranges(position_percent, fallback_timestamp=_calculate_timestamp(metadata.duration, position_percent)),
+        "force_keyframes_at_cuts": True,
     }
     if browser:
         ydl_opts["cookiesfrombrowser"] = (browser,)

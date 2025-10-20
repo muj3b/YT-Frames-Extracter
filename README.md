@@ -5,7 +5,7 @@ Command-line utility that downloads frames from every full-length video on a You
 ## Features
 - Filters out YouTube Shorts and live streams.
 - Chronological slideshow (oldest to newest) at 1080p with configurable frame duration and frame position.
-- Parallel downloads and frame extraction with ffmpeg accurate-seek for snappy processing.
+- Parallel downloads and frame extraction with ffmpeg accurate-seek and clipped downloads (only a few seconds per video).
 - Graceful handling of private/unavailable and age-restricted videos (skipped unless cookies are supplied).
 - Metadata caching, resumable processing, and browser-cookie authentication to dodge rate limits.
 - Clear tqdm-powered progress bar with ETA, live status, and concise logging (no SABR spam).
